@@ -2,138 +2,132 @@
 import json
 import textwrap
 from bs4 import BeautifulSoup
+import requests
 
-# with open('zhilian_test.txt','r') as f:
-#     all_info = f.read().encode('utf-8').decode('utf-8')
-#     # all_info = f.read()
+dict1 = {
+    '工作经验：': '1-3年',
+    'Resource': '智联招聘',
+    '招聘人数：': '1人',
+    '发布日期：': '2017-03-13',
+    '公司地址：': '上海市浦东南路2250号创智B座408室',
+    'JobName': 'Python/Odoo高级开发工程师',
+    'Tags': [
+        '五险一金',
+        '绩效奖金',
+        '年终分红',
+        '加班补助',
+        '通讯补贴',
+        '带薪年假',
+        '员工旅游',
+        '节日福利'
+    ],
+    '公司行业：': '计算机软件',
+    '公司性质：': '民营',
+    '工作地点：': '上海',
+    '工作性质：': '全职',
+    '职位月薪：': '10001-15000元/月',
+    'Description': [
+        '1、用Python开发Odoo（OpenERP）客制化新模块；',
+        '2、实现Odoo和其他系统的接口，比如电商平台、财务软件或ERP（SAP/金蝶/用友）等；',
+        '3、以Odoo作为平台开发前端网站；',
+        '4、负责设计文档、技术文档、用户文档、实施文档的编写；',
+        '5、对前瞻技术研究，站在用户体验角度提出产品改善意见；',
+        '6、负责成员技术培训及指导。',
+        '\xa0'
+    ],
+    'FirmInfo': '''上海企通软件有限公司该公司其他职位上海企通软件有限公司成立于2003年1月，企通公司系长期致力于管理软件的咨询、营销、培训、实施、服务及开发于一体的管理信息化服务公司；以“专注本地成长型企业信息化服务，以信息化为企业创造价值”为己任，为中小企业提供专业财务管理、供应链管理、生产制造管理、协同办公管理、客户关系管理、人力资源管理、商业房产物业管理、呼叫中心、供应链协同平台等管理信息化系统。\xa0\xa0\xa0\xa0\xa0\xa02004年5月，公司与国内最大的管理软件供应商用友软件集团结成战略伙伴合作关系，共同促进上海地区成长型企业的信息化建设。截至2012年底，公司实施服务的用友T系列、ERP-U8、ERP-NC、OA协同管理软件的用户达5000多家。公司在不同类型的中小企业最佳实践的基础上，结合用友软件的丰富服务经验，为广大中小企业提供与之相关的行业解决方案，例如机械、电子、汽配、五金、家具、服装、化工、食品、制药、服务业、零售业等多个行业解决方案。\xa0\xa0随着公司的发展，2012年企通公司在武汉成立分公司。目前公司拥有70多人的服务团队，为了提高客户服务质量及满意度，企通公司非常重视员工的素质、技能提高，目前公司的实施服务人员89%以上通过用友、畅捷通公司工程师认证，实施项目经理全部通过美国PMI项目管理协会设立的项目管理专业人士（PMP）认证；公司已成长为用友在上海人数最多、规模最大、实力最强的核心营销服务机构；同时是用友畅捷通上海地区唯一一家“畅捷服务联盟4S服务机构”，上海首家通过ISO9001服务质量认证的用友合作伙伴，上海中小企业服务中心指定信息化服务站。\xa0\xa0\xa0\xa0\xa0企通公司的优质客户服务及稳定发展也得到了用友集团的认可，从2004年以来，企通公司荣获了用友软件股份公司颁发最佳服务奖、全国渠道TOP10、最佳管理奖等几十项奖项。在用友公司的“用友2008年度客户满意度第三方机构调查”中，企通公司以96.25分，高出平均分17分的高分荣获用友全国授权服务中心满意第一。优良的服务质量，使企通公司成为用友公司全国首批4家ISO9001认证的用友畅捷通上海地区唯一一家“畅捷服务联盟4S服务机构”，标准化的流程为了企通公司进一步提高服务质量打下了坚实的基础。\xa0\xa0企通公司的快速发展及优质服务也得到了媒体的关注，继2007年8月《上海中小企业》杂志刊登企通公司的相关报道后，2008年9月，全国知名信息化杂志《SP计算机产品与流通》以“用服务夯实起飞的跑道”的标题全篇幅刊登企通公司从传统的软件代理商向专业的服务商转型成功的报道,2010年7月，企通软件在电脑商报组织的“华东百佳方案商评选”中荣获“医药化工行业优秀方案商”，上海企通软件为中小成长型企业提供全面的行业化解决方案。2013年1月结合中小企业ERP实施特点，企通提出“软件+管理”的ERP实施理念，帮助中小企业通过流程梳理的管理方法提高ERP实施交付价值，降低ERP实施风险。5月上海企通成功认定为双软企业！8月上海企通成为首批上海产业园区中小企业服务联盟的27家成员单位之一！2014年6月企通荣获中国软件网颁发的中国软件金牌渠道奖！7月用友ERP-U8工程师考核中：CRM实施认证第一名、上海唯一一个UAP平台开发工程师认证、U8生产制造实施高级顾问第一名均在企通产生！10月因业务发展需要，办公面积增至900㎡！11月成功举办畅捷通在上海地区史上规模最大：线上500线下500共1000人的第七届会计文化节盛会！12月因业务发展，员工人数突破100人！企通公司以“让沟通更加顺畅，让服务更加周到”为服务理念，全力打造“专业服务”品牌。随着国家社会等各个方面对中小型企业的认可，中小型企业的信息化应用也越来越得到企业内外的重视，我们也意识到企业在财务管理、业务管理、生产制造管理、客户管理、办公管理、人力资源管理等各个方面实现信息管理现代化的必要性与紧迫感。今天的软件发展“购买软件就是购买服务”的观点已经过时，而应是：购买软件不仅是购买优质的服务，更重要的是购买先进的管理理念。而我们作为先进管理理念的传播者，上海企通软件有限公司全体同仁希望通过专业、及时、真诚的服务，能为您和您的企业信息化的发展提供全面的支持与帮助。''',
+    '职位类别：': '软件研发工程师',
+    '工作地址：': '上海企通软件有限公司',
+    'CompanyName': '上海企通软件有限公司',
+    '公司规模：': '20-99人',
+    '最低学历：': '大专',
+    'FirmWebsite': 'http: //company.zhaopin.com/P8/CC1377/7137/CC137771372.htm',
+    'Qualification': [
+        '1、3年以上Python/Odoo开发经验，精通Python编程，掌握Python的高效写法；',
+        '2、熟悉Odoo框架，了解Odoo使用的基本Python库，能熟练的对Odoo(OpenERP)进行二次开发的优先考虑；',
+        '3、熟悉JavaScript，熟悉Linux操作系统，熟练掌握Shell脚本语言；熟悉使用git等代码管理工具；',
+        '4、熟悉PostgreSQL数据库，能熟练编写sql语句；',
+        '5、有HTML5,CSS3前端开发经验者优先；',
+        '6、具备大规模高并发访问的服务集群架构设计和开发经验者优先；',
+        '7、有钻研问题并解决问题的兴趣和毅力，有团队合作精神、责任心、能接受建议，具备良好的表达和沟通能力。有较强的自学能力和技术攻关能力；',
+        '8、有一定的英文水平者优先考虑.',
+        '\n\n'
+    ],
+    '公司主页：': 'www.uftong.com'
+}
+
+
+
+keys = {'公司主页：', 'Description', 'Resource', '公司行业：', '工作地点：',
+'职位月薪：', '工作经验：', '招聘人数：', 'Qualification', 'Tags', '公司地址：',
+ '工作性质：', 'CompanyName', 'JobName', '最低学历：', '公司性质：', '工作地址：',
+  '公司规模：', '职位类别：', 'FirmInfo', '发布日期：', 'FirmWebsite'}
+
+
+pri_keys = {'公司主页：', 'Description', 'Resource', '公司行业：', '工作地点：',
+    '职位月薪：', '工作经验：', '招聘人数：', 'Qualification', 'Tags', '公司地址：',
+     '工作性质：', 'CompanyName', 'JobName', '最低学历：', '公司性质：',
+      '公司规模：', 'FirmInfo', '发布日期：'}
+
+kesss = {'公司主页：AAAA', 'DescriptionAAAAA', 'ResourceAAAAA', '公司行业AAAA：', '工作地点AAAA：',
+'职位月薪AAA：', '工作经验AAA：', '招聘人数AAA：', 'QualificationAAA', 'TagsAAA', '公司地址AAAA：',
+ '工作性质：', 'CompanyName', 'JobName', '最低学历：', '公司性质：', '工作xxxxx地址：',
+  '公司规模AAA：', '职位XXXXX类别：', 'FirmInfoAAA', '发布日期：AAA', 'FirmWexxxxxxbsite'}
+
+# print('%s,%s,%s'%('afa','safs','asgfsd'))
+
+# -3
+# print(pri_keys-keys)
+
+
+# import urllib2
 #
-# all_info = json.loads(all_info)
-# # print(all_info)
-# a = all_info['zhilian1']
+# url = 'http://www.baidu.com'
 #
-# for i,j in a.items():
-#     print(i,':',j)
-
-a = '''     <div class="tab-inner-cont">
-                        <!-- SWSStringCutStart -->
-                        <p>岗位职责</p><p>1. 根据用户的需求开发公司的前端系统 ;</p><p>2. 对负责模块进行单元测试；</p><p>3. 在能力范围内指导其他开发者；</p><p>4. 编写技术文档。</p><p>&nbsp;</p><p>岗位要求</p><p>1. 计算机及相关专业毕业，大学本科以及以上学历；</p><p>2. 出色的Python Web 应用开发能力；</p><p>3. 熟悉一种关系型数据库；</p><p><br/></p><p><br/></p><p>&nbsp;（薪资会根据经验做适当调整）</p>
-                        <!-- SWSStringCutEnd -->
-
-                        <b>工作地址：</b>
-                        <h2>
-                            上海浦东新区陆家嘴世纪金融广场
-
-                        </h2>
-
-
-                        <p>
-                            <button id="applyVacButton1" class="button-small" title="申请职位" onclick="zlzp.searchjob.ajaxApplyBrig3('1');dyweTrackEvent('bjobsdetail14gb','directapply_middle');"></button>
-                        </p>
-
-                    </div>
-'''
-
-b = '''
-<ul class="terminal-ul clearfix">
-                <li><span>职位月薪：</span><strong>20001-30000元/月&nbsp;<a href="http://www.zhaopin.com/gz_shanghai/" target="_blank" title="上海工资计算器"><img src="http://jobs.zhaopin.com/images/calculator.png" alt="上海工资计算器" /></a></strong></li>
-                <li><span>工作地点：</span><strong><a target="_blank" href="http://www.zhaopin.com/shanghai/">上海</a></strong></li>
-                <li><span>发布日期：</span><strong><span id="span4freshdate">2017-03-10</span></strong></li>
-                <li><span>工作性质：</span><strong>全职</strong></li>
-                <li><span>工作经验：</span><strong>3-5年</strong></li>
-                <li><span>最低学历：</span><strong>本科</strong></li>
-                <li><span>招聘人数：</span><strong>1人 </strong></li>
-                <li><span>职位类别：</span><strong><a target="_blank" href="http://jobs.zhaopin.com/shanghai/sj079/">软件研发工程师</a></strong></li>
-            </ul>
+# req = urllib2.urlopen(url)
+#
+# print(req)
+# from collections import Counter
+#
+# list1 = [('a',5),('b',6),('c',7),('d',8)]
+#
+# c = Counter(dict(list1))
+#
+# print(c.most_common(2))
+#
+#
+#
+# dict123 = {'a':1,'b':2,'c':3}
+# print(dict123.items())
 
 
-'''
+from collections import Counter
 
-c = '''
-  <div class="inner-left fl">
-                <h1>Senior Python</h1>
-                <h2><a onclick="recordOutboundLink(this, 'terminalpage', 'tocompanylink3');" href="http://company.zhaopin.com/CC246060339.htm" target="_blank">上海洛书投资管理有限公司</a></h2>
-                <div style="width:683px;" class="welfare-tab-box"> <span>五险一金</span><span>年终分红</span><span>包吃</span><span>带薪年假</span><span>补充医疗保险</span><span>定期体检</span><span>员工旅游</span><span>节日福利</span> </div>
-                <div class="lightspot"></div>
-            </div>
+def func(n):
+    c = Counter(lst).most_common(n)
+    return c.keys()
 
+lst = [1,2,3,45,45,65,7,6,8,7,9,8,36,4356,45,13,42,33,1,32,4,3]
 
-'''
-
-d = '''
-            <div class="tab-inner-cont" style="display:none;word-wrap:break-word;">
-
-                        <h5><a rel="nofollow" href="http://company.zhaopin.com/CC246060339.htm" onclick="recordOutboundLink(this, 'terminalpage', 'tocompanylink4');" target="_blank">上海洛书投资管理有限公司</a><a target="_blank" class="color-blue fr see-other-job" href="http://company.zhaopin.com/CC246060339.htm" rel="nofollow" onclick="recordOutboundLink(this, 'terminalpage', 'tocompanylink2');">该公司其他职位</a></h5>
-                        <p>
-                            <div style="TOP: 0px"><span style="FONT-SIZE: 10.5pt; FONT-FAMILY: 宋体; mso-ascii-font-family: 'Songti SC'; mso-hansi-font-family: 'Songti SC'; mso-bidi-font-family: 宋体; mso-font-kerning: 0pt; mso-ansi-language: EN-US; mso-fareast-language: ZH-CN; mso-bidi-language: AR-SA"><span style="FONT-SIZE: 10.5pt; FONT-FAMILY: 宋体; mso-ascii-font-family: 'Songti SC'; mso-hansi-font-family: 'Songti SC'; mso-bidi-font-family: 宋体; mso-font-kerning: 0pt; mso-ansi-language: EN-US; mso-fareast-language: ZH-CN; mso-bidi-language: AR-SA">上海洛书投资管理有限公司是一家具有全球化视野的数量化交易公司，</span>专注于量化交易系统和策略研发。创始人曾任职于华尔街顶级金融机构并拥有丰富的量化交易经验。公司总部设立于上海，并在世界主要的金融中心设有办公室或联系人。技术团队是公司最核心的部门，以开发高性能、稳定可靠的量化交易平台为己任，响应变化、敏捷开发和快速迭代；我们提倡专业高效的工作和平等直接的沟通，依靠团队协作，共同面对各种挑战。</span></div>
-<p><span style="FONT-SIZE: 10.5pt; FONT-FAMILY: 宋体; mso-ascii-font-family: 'Songti SC'; mso-hansi-font-family: 'Songti SC'; mso-bidi-font-family: 宋体; mso-font-kerning: 0pt; mso-ansi-language: EN-US; mso-fareast-language: ZH-CN; mso-bidi-language: AR-SA">我们在如今飞速发展的金融市场中坚实成长，并创造性地将科技引入传统金融业，为产业革新作出贡献。我们致力于打造一个以团队协作、认真实干的企业环境。我们的核心价值是乐享工作，才智为先，互相尊重。</span></p>
-<p><span style="FONT-SIZE: 10.5pt; FONT-FAMILY: 宋体; mso-ascii-font-family: 'Songti SC'; mso-hansi-font-family: 'Songti SC'; mso-bidi-font-family: 宋体; mso-font-kerning: 0pt; mso-ansi-language: EN-US; mso-fareast-language: ZH-CN; mso-bidi-language: AR-SA">我们诚邀愿意在上海发展的优秀人才加盟共同发展。</span></p>
-                        </p>
+print(func(3))
 
 
-
-                        <h3></h3>
-                        <p>
-
-                        </p>
-
-                    </div>
-                </div>
-            </div>
-
-            <div class="today_recommend">
-                <ul class="tab-ul">
-                    <li class="current">最新职位推荐</li>
-                    <li>今日相似推荐</li>
-                </ul>
-            </div>
-
-
-'''
-
-e = '''
-     <div class="company-box">
-
-                <p class="company-name-t"><a rel="nofollow" href="http://company.zhaopin.com/CC246060339.htm" target="_blank">上海洛书投资管理有限公司</a></p>
-                <ul class="terminal-ul clearfix terminal-company mt20">
-                    <li><span>公司规模：</span><strong>20-99人</strong></li>
-                    <li><span>公司性质：</span><strong>民营</strong></li>
-
-
-
-                    <li><span>公司行业：</span><strong><a target="_blank" href="http://jobs.zhaopin.com/shanghai/in180000/">基金/证券/期货/投资</a></strong></li>
-
-                    <li><span>公司主页：</span><strong><a rel="nofollow" href="http://www.luoshucapital.com/" target="_blank">http://www.luoshucapital.com/</a></strong></li>
-
-                    <li>
-                        <span>公司地址：</span><strong>
-                            上海浦东新区陆家嘴世纪金融广场<br>
-
-                        </strong>
-                    </li>
-                </ul>
-                <!--是否是反馈通-->
-                <input type="hidden" id="displayRegionScopeId" name="displayRegionScopeId" value="0" />
-            </div>
-            <div class="terminalpage-advertising">
-                <ul id="job-advertising"></ul>
-            </div>
-        </div>
-    </div>
-
-
-'''
-
-soup = BeautifulSoup(e,'lxml')
-# soup_div = soup.find('div',class_='tab-inner-cont',style=False)
-job_dict = {}
-
-soup_ul_2 = soup.find('ul',class_="terminal-ul clearfix terminal-company mt20")
-for li in soup_ul_2.find_all('li'):
-    key = li.span.string
-    value = li.strong.get_text().strip()
-    job_dict[key] = value
-
-print(job_dict)
-
-# a = u'\u7537'
-# print a
+# import queue
+# #
+# q = queue.Queue()
+#
+# def f1():
+#     global q
+#     q.put(1)
+#
+#
+# def f():
+#     global q
+#     print(q.qsize())
+#     print(q.get())
+#
+# f1()
+# # print(q.qsize())
+# if q.empty:
+#     print('s')
+# f()

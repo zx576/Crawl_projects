@@ -7,6 +7,7 @@ import os
 import threading
 import time
 from implement_dt import Tackle_dt
+from crwal_ip import fetch
 
 headers = {
         'User-Agent':'"Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US) '
@@ -17,6 +18,7 @@ headers = {
 def fetch_xici():
     '''
     download ip from xici website
+
     '''
     # 连接数据库
     tackle_dt = Tackle_dt()
